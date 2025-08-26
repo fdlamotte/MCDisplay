@@ -55,8 +55,14 @@ protected:
   }
 
   bool handleCustomCommand(uint32_t sender_timestamp, char* command, char* reply) override {
-    if (strcmp(command, "magic") == 0) {    // example 'custom' command handling
-      strcpy(reply, "**Magic now done**");
+    if (strncmp(command, "gps ", 4) == 0) {    // example 'custom' command handling
+      if (strncmp(command+4, "on", 2) == 0) {
+        sensors.setSettingValue("gps", "1");
+        strcpy(reply, "Gps started");
+      } else {
+        sensors.setSettingValue("gps", "0");
+        strcpy(reply, "Gps stopped");
+      }
       return true;   // handled
     } else if (memcmp(command, "sout ", 5) == 0) {
       //SERIAL_GW.println(&command[5]);
@@ -157,7 +163,7 @@ void setup() {
   // send out initial Advertisement to the mesh
   the_mesh.sendSelfAdvertisement(16000);
 
-  digitalWrite(DISP_BACKLIGHT, LOW);
+  pinMode(14, OUTPUT);
 }
 
 void loop() {
@@ -186,4 +192,19 @@ void loop() {
   }
   the_mesh.loop();
   sensors.loop();
+
+  static int next_btn_check = 0;
+  if (millis() > next_btn_check) {
+    bool touch_state = digitalRead(PIN_BUTTON2);
+    digitalWrite(DISP_BACKLIGHT, !touch_state);
+    next_btn_check = millis() + 300;
+  }
+
+  static int next_led_toggle = 0;
+  if (millis() > next_led_toggle) {
+    static bool led_state = LOW;
+    led_state = ~led_state;
+    digitalWrite(14, led_state);
+    next_led_toggle = millis() + 1000;
+  }
 }
