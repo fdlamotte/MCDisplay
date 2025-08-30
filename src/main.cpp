@@ -88,6 +88,11 @@ void setup() {
 
   delay(1000);
 
+#ifdef PIN_VEXT_EN
+  pinMode(PIN_VEXT_EN, OUTPUT);
+  digitalWrite(PIN_VEXT_EN, LOW);
+#endif
+
   board.begin();
 
 #ifdef PIN_USER_BTN
