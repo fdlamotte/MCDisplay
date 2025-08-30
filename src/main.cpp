@@ -1,30 +1,7 @@
 #include "SensorMesh.h"
+#include "UITask.h"
 
-char display_lines[DISPLAY_LINES][25] = {
-  "",
-  "Hello from MeshCore"
-};
-
-void refresh_screen() {
-  int i;
-  display.startFrame();
-  for (i=0; i < DISPLAY_LINES; i++) {
-    display.setCursor(5, 112 - (12 * i));
-    display.print(display_lines[i]);
-  }
-  display.endFrame();
-}
-
-void add_line(char * l) {
-  int i;
-  for (i = DISPLAY_LINES - 1; i >= 1; i--) {
-    strncpy(display_lines[i], display_lines[i-1], 23);
-  }
-  strncpy(display_lines[0], l, 23);
-  display_lines[0][23] = 0;
-
-  refresh_screen();
-}
+static UITask ui_task(display);
 
 class MyMesh : public SensorMesh {
 public:
@@ -66,7 +43,7 @@ protected:
       return true;   // handled
     } else if (memcmp(command, "sout ", 5) == 0) {
       //SERIAL_GW.println(&command[5]);
-      add_line(&command[5]);
+      ui_task.add_line(&command[5]);
       strcpy(reply, "ok");
       return true;
     }
@@ -76,11 +53,11 @@ protected:
   bool handleIncomingMsg(ContactInfo& from, uint32_t timestamp, uint8_t* data, uint flags, size_t len) override {
     if (len > 3 && !memcmp(data, "s> ", 3)) {
       data[len] = 0;
-      add_line((char*) &data[3]);
+      ui_task.add_line((char*) &data[3]);
       return true;
     } else {
       data[len] = 0;
-      add_line((char*)data);
+      ui_task.add_line((char*)data);
       return true;
     }
 
@@ -113,11 +90,19 @@ void setup() {
 
   board.begin();
 
-#ifdef DISPLAY_CLASS
-  if (display.begin()) {
-    refresh_screen();
-  }
+#ifdef PIN_USER_BTN
+#ifdef USER_BTN_MODE
+  pinMode(PIN_USER_BTN, USER_BTN_MODE);
+#else
+  pinMode(PIN_USER_BTN, INPUT);
 #endif
+#endif
+
+  if (display.begin()) {
+    display.startFrame();
+    display.print("Please wait...");
+    display.endFrame();
+  }
 
   if (!radio_init()) { halt(); }
 
@@ -160,10 +145,11 @@ void setup() {
 
   the_mesh.begin(fs);
 
+  ui_task.begin(the_mesh.getNodePrefs(), FIRMWARE_BUILD_DATE, FIRMWARE_VERSION);
+
   // send out initial Advertisement to the mesh
   the_mesh.sendSelfAdvertisement(16000);
 
-  pinMode(14, OUTPUT);
 }
 
 void loop() {
@@ -193,6 +179,8 @@ void loop() {
   the_mesh.loop();
   sensors.loop();
 
+// Techo Backlight support
+#ifdef LILYGO_TECHO
   static int next_btn_check = 0;
   if (millis() > next_btn_check) {
     bool touch_state = digitalRead(PIN_BUTTON2);
@@ -207,4 +195,8 @@ void loop() {
     digitalWrite(14, led_state);
     next_led_toggle = millis() + 1000;
   }
+#endif
+
+  ui_task.loop();
+
 }
