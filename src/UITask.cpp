@@ -3,7 +3,11 @@
 #include <helpers/CommonCLI.h>
 
 #define AUTO_OFF_MILLIS      60000  // 1 min
+#ifdef LILYGO_TECHO
+#define BOOT_SCREEN_MILLIS   8000   // 8 seconds
+#else
 #define BOOT_SCREEN_MILLIS   4000   // 4 seconds
+#endif
 
 // 'meshcore', 128x13px
 static const uint8_t meshcore_logo [] PROGMEM = {
@@ -73,10 +77,10 @@ void UITask::renderCurrScreen() {
 void UITask::add_line(char * l) {
   int i;
   for (i = DISPLAY_LINES - 1; i >= 1; i--) {
-    strncpy(display_lines[i], display_lines[i-1], 23);
+    strncpy(display_lines[i], display_lines[i-1], LINE_LENGTH);
   }
-  strncpy(display_lines[0], l, 23);
-  display_lines[0][23] = 0;
+  strncpy(display_lines[0], l, LINE_LENGTH);
+  display_lines[0][LINE_LENGTH] = 0;
 
   new_lines = true;
 }
@@ -99,6 +103,7 @@ void UITask::loop() {
     _next_read = millis() + 200;  // 5 reads per second
   }
 #endif
+
 #ifndef LILYGO_TECHO
   if (new_lines) {
     if (!_display->isOn()) {
@@ -107,7 +112,7 @@ void UITask::loop() {
     _auto_off = millis() + AUTO_OFF_MILLIS;
   }
 #endif
-
+  
   if (_display->isOn()) {
     if (millis() >= _next_refresh && new_lines) {
       _display->startFrame();
@@ -116,6 +121,7 @@ void UITask::loop() {
 
       _next_refresh = millis() + 1000;   // refresh every second
     }
+    
 #ifndef LILYGO_TECHO
     if (millis() > _auto_off) {
       _display->turnOff();

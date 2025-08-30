@@ -108,6 +108,9 @@ void setup() {
     display.print("Please wait...");
     display.endFrame();
   }
+#ifdef LILYGO_TECHO
+  digitalWrite(DISP_BACKLIGHT, LOW);
+#endif
 
   if (!radio_init()) { halt(); }
 

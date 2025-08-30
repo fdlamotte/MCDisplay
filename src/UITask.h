@@ -3,6 +3,10 @@
 #include <helpers/ui/DisplayDriver.h>
 #include <helpers/CommonCLI.h>
 
+#ifndef LINE_LENGTH
+#define LINE_LENGTH 20
+#endif
+
 class UITask {
   DisplayDriver* _display;
   unsigned long _next_read, _next_refresh, _auto_off;
@@ -10,7 +14,7 @@ class UITask {
   NodePrefs* _node_prefs;
   char _version_info[32];
   bool new_lines = true;
-  char display_lines[DISPLAY_LINES][25] = {
+  char display_lines[DISPLAY_LINES][LINE_LENGTH+1] = {
   "",
   "Hello from MeshCore"
   };
