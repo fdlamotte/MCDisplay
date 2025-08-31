@@ -162,6 +162,9 @@ void setup() {
   command[0] = 0;
 
   sensors.begin();
+#if defined(ENV_INCLUDE_GPS) && !defined(PIN_GPS_EN)
+  sensors.setSettingValue("gps", "1");
+#endif
 
   the_mesh.begin(fs);
 

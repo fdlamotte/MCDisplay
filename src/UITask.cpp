@@ -138,7 +138,6 @@ bool UITask::toggleGps() {
       }
     }
   }
-
 }
 
 void UITask::loop() {
