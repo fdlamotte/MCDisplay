@@ -2,7 +2,7 @@
 #include <Arduino.h>
 #include <helpers/CommonCLI.h>
 
-#define AUTO_OFF_MILLIS      10000  // 1 min
+#define AUTO_OFF_MILLIS      60000  // 1 min
 #ifdef LILYGO_TECHO
 #define BOOT_SCREEN_MILLIS   8000   // 8 seconds
 #else
@@ -144,11 +144,9 @@ void UITask::loop() {
             case HOME:
               refresh_sensors();
               _screen = SENSORS;
-              Serial.println("Switching to sensors");
               break;
             case SENSORS:
               _screen = HOME;
-              Serial.println("Switching to home");
               break;
           }
           new_lines = true;

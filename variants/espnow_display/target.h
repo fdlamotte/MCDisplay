@@ -3,6 +3,8 @@
 #include <helpers/ESP32Board.h>
 #include <helpers/esp32/ESPNOWRadio.h>
 #include <helpers/SensorManager.h>
+#include <helpers/sensors/EnvironmentSensorManager.h>
+#include <helpers/sensors/MicroNMEALocationProvider.h>
 #ifdef DISPLAY_CLASS
   #include <helpers/ui/SSD1306Display.h>
   #include <helpers/ui/MomentaryButton.h>
@@ -11,7 +13,7 @@
 extern ESP32Board board;
 extern ESPNOWRadio radio_driver;
 extern ESP32RTCClock rtc_clock;
-extern SensorManager sensors;
+extern EnvironmentSensorManager sensors;
 
 #ifdef DISPLAY_CLASS
   extern DISPLAY_CLASS display;
