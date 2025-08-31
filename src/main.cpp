@@ -1,6 +1,7 @@
 #include "SensorMesh.h"
 #include "UITask.h"
 
+
 static UITask ui_task(display);
 
 class MyMesh : public SensorMesh {
@@ -41,6 +42,18 @@ protected:
         strcpy(reply, "Gps stopped");
       }
       return true;   // handled
+    } else if (memcmp(command, "rt", 2) == 0 && sender_timestamp == 0) {
+      CayenneLPP lpp(200);
+      DynamicJsonDocument jsonBuffer(4096);
+      JsonArray root;
+      root = jsonBuffer.to<JsonArray>();
+      lpp.addVoltage(TELEM_CHANNEL_SELF, (float)board.getBattMilliVolts() / 1000.0f);
+      sensors.querySensors(0xFF, lpp);
+      lpp.decode(lpp.getBuffer(), lpp.getSize(), root);
+      serializeJsonPretty(root, Serial);
+      Serial.println();
+      strcpy(reply, "ok");
+      return true;
     } else if (memcmp(command, "sout ", 5) == 0) {
       //SERIAL_GW.println(&command[5]);
       ui_task.add_line(&command[5]);

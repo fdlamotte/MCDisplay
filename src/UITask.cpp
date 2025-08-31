@@ -2,7 +2,7 @@
 #include <Arduino.h>
 #include <helpers/CommonCLI.h>
 
-#define AUTO_OFF_MILLIS      60000  // 1 min
+#define AUTO_OFF_MILLIS      10000  // 1 min
 #ifdef LILYGO_TECHO
 #define BOOT_SCREEN_MILLIS   8000   // 8 seconds
 #else
@@ -63,8 +63,38 @@ void UITask::renderCurrScreen() {
     uint16_t typeWidth = _display->getTextWidth(node_type);
     _display->setCursor((_display->width() - typeWidth) / 2, 35);
     _display->print(node_type);
-    _display->setCursor(5, _display->height() - 15);
+    _display->setCursor(3, _display->height() - 15);
     _display->print(_node_prefs->node_name);
+  } else if (_screen == SENSORS) {
+    char buf[100];
+    _display->setCursor(
+        _display->width()
+          -_display->getTextWidth(_node_prefs->node_name) - 1, 3);
+    _display->print(_node_prefs->node_name);
+    _display->drawRect(0,15,_display->width(),1);
+    int y = 18;
+    for(JsonObject v : _sensors_arr) {
+      _display->setCursor(5, y);
+      switch (v["type"].as<int>()) {
+        case 136: // GPS
+          sprintf(buf, "%.4f %.4f",
+            v["value"]["latitude"].as<float>(),
+            v["value"]["longitude"].as<float>());
+          break;
+        default: // will be a float for now
+          sprintf(buf, "%.02f",
+            v["value"].as<float>());
+      }
+      _display->setCursor(5, y);
+      _display->print(v["name"].as<JsonString>().c_str());
+      _display->setCursor(
+        _display->width()-_display->getTextWidth(buf)-1, y
+      );
+      _display->print(buf);
+      y = y + 12;
+    }
+
+    new_lines = false;
   } else {  // home screen
     for (int i=0; i < DISPLAY_LINES; i++) {
       _display->setCursor(3, _display->height() - (12 * (i+1)));
@@ -72,6 +102,14 @@ void UITask::renderCurrScreen() {
     }
     new_lines = false;
   }
+}
+
+void UITask::refresh_sensors() {
+  CayenneLPP lpp(200);
+  lpp.addVoltage(TELEM_CHANNEL_SELF, (float)board.getBattMilliVolts() / 1000.0f);
+  sensors.querySensors(0xFF, lpp);
+  _sensors_arr.clear();
+  lpp.decode(lpp.getBuffer(), lpp.getSize(), _sensors_arr);
 }
 
 void UITask::add_line(char * l) {
@@ -86,30 +124,44 @@ void UITask::add_line(char * l) {
 }
 
 void UITask::loop() {
+  if (new_lines) {
+#ifndef LILYGO_TECHO
+    if (!_display->isOn()) {
+      _display->turnOn();
+    } 
+#endif
+    _screen=HOME;
+    _auto_off = millis() + AUTO_OFF_MILLIS;
+  }
+
 #ifdef PIN_USER_BTN
   if (millis() >= _next_read) {
     int btnState = digitalRead(PIN_USER_BTN);
     if (btnState != _prevBtnState) {
       if (btnState == LOW) {  // pressed?
         if (_display->isOn()) {
-          // TODO: any action ?
+          switch (_screen) {
+            case HOME:
+              refresh_sensors();
+              _screen = SENSORS;
+              Serial.println("Switching to sensors");
+              break;
+            case SENSORS:
+              _screen = HOME;
+              Serial.println("Switching to home");
+              break;
+          }
+          new_lines = true;
         } else {
           _display->turnOn();
+          new_lines = true;
+          _screen = HOME;
         }
         _auto_off = millis() + AUTO_OFF_MILLIS;   // extend auto-off timer
       }
       _prevBtnState = btnState;
     }
     _next_read = millis() + 200;  // 5 reads per second
-  }
-#endif
-
-#ifndef LILYGO_TECHO
-  if (new_lines) {
-    if (!_display->isOn()) {
-      _display->turnOn();
-    } 
-    _auto_off = millis() + AUTO_OFF_MILLIS;
   }
 #endif
   
