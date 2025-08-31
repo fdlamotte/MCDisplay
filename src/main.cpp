@@ -116,15 +116,6 @@ void setup() {
 #endif
 #endif
 
-  if (display.begin()) {
-    display.startFrame();
-    display.print("Please wait...");
-    display.endFrame();
-  }
-#ifdef LILYGO_TECHO
-  digitalWrite(DISP_BACKLIGHT, LOW);
-#endif
-
   if (!radio_init()) { halt(); }
 
   fast_rng.begin(radio_get_rng_seed());

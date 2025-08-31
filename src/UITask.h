@@ -15,6 +15,8 @@ class UITask {
   NodePrefs* _node_prefs;
   char _version_info[32];
   bool new_lines = true;
+  bool scroll = false;
+  int scroll_offset = 0;
   enum {HOME, SENSORS} _screen = HOME;
   DynamicJsonDocument _sensors_doc;
   JsonArray _sensors_arr;

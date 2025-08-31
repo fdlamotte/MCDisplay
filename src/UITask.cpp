@@ -27,11 +27,10 @@ static const uint8_t meshcore_logo [] PROGMEM = {
 };
 
 void UITask::begin(NodePrefs* node_prefs, const char* build_date, const char* firmware_version) {
+  _display->turnOn();
   _prevBtnState = HIGH;
   _auto_off = millis() + AUTO_OFF_MILLIS;
   _node_prefs = node_prefs;
-  _display->turnOn();
-
   // strip off dash and commit hash by changing dash to null terminator
   // e.g: v1.2.3-abcdef -> v1.2.3
   char *version = strdup(firmware_version);
@@ -64,6 +63,7 @@ void UITask::renderCurrScreen() {
     _display->setCursor((_display->width() - typeWidth) / 2, 35);
     _display->print(node_type);
   } else if (_screen == SENSORS) {
+    refresh_sensors();
     char buf[100];
     _display->setCursor(
         _display->width()
@@ -71,7 +71,9 @@ void UITask::renderCurrScreen() {
     _display->print(_node_prefs->node_name);
     _display->drawRect(0,15,_display->width(),1);
     int y = 18;
-    for(JsonObject v : _sensors_arr) {
+    int s_size = _sensors_arr.size();
+    for (int i = 0; i < (scroll?DISPLAY_LINES-1:s_size); i++) {
+      JsonObject v = _sensors_arr[(i+scroll_offset)%s_size];
       _display->setCursor(5, y);
       switch (v["type"].as<int>()) {
         case 136: // GPS
@@ -91,7 +93,8 @@ void UITask::renderCurrScreen() {
       _display->print(buf);
       y = y + 12;
     }
-
+    if (scroll) scroll_offset = (scroll_offset+1)%s_size;
+    else scroll_offset = 0;
     new_lines = false;
   } else {  // home screen
     for (int i=0; i < DISPLAY_LINES; i++) {
@@ -108,6 +111,7 @@ void UITask::refresh_sensors() {
   sensors.querySensors(0xFF, lpp);
   _sensors_arr.clear();
   lpp.decode(lpp.getBuffer(), lpp.getSize(), _sensors_arr);
+  scroll = _sensors_arr.size() > DISPLAY_LINES - 1; // there is a status line
 }
 
 void UITask::add_line(char * l) {
@@ -140,7 +144,6 @@ void UITask::loop() {
         if (_display->isOn()) {
           switch (_screen) {
             case HOME:
-              refresh_sensors();
               _screen = SENSORS;
               break;
             case SENSORS:
@@ -162,12 +165,13 @@ void UITask::loop() {
 #endif
   
   if (_display->isOn()) {
-    if (millis() >= _next_refresh && new_lines) {
+    if (new_lines || ( (millis() >= _next_refresh)
+      && (_screen == SENSORS) && scroll)) {
       _display->startFrame();
       renderCurrScreen();
       _display->endFrame();
 
-      _next_refresh = millis() + 1000;   // refresh every second
+      _next_refresh = millis() + 3000;   // refresh every 3 second
     }
     
 #ifndef LILYGO_TECHO
