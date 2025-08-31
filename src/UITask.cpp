@@ -63,8 +63,6 @@ void UITask::renderCurrScreen() {
     uint16_t typeWidth = _display->getTextWidth(node_type);
     _display->setCursor((_display->width() - typeWidth) / 2, 35);
     _display->print(node_type);
-    _display->setCursor(3, _display->height() - 15);
-    _display->print(_node_prefs->node_name);
   } else if (_screen == SENSORS) {
     char buf[100];
     _display->setCursor(
