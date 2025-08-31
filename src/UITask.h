@@ -33,4 +33,5 @@ public:
   void refresh_sensors();
   void add_line (char* s);
   void loop();
+  bool toggleGps();
 };

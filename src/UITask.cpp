@@ -125,6 +125,22 @@ void UITask::add_line(char * l) {
   new_lines = true;
 }
 
+bool UITask::toggleGps() {
+  int n = sensors.getNumSettings();
+  for (int i=0; i < n; i++) {
+    if (!strcmp("gps", sensors.getSettingName(i))) {
+      if (!strcmp("1", sensors.getSettingValue(i))) {
+        sensors.setSettingValue("gps", "0");
+        return false;
+      } else {
+        sensors.setSettingValue("gps", "1");
+        return true;
+      }
+    }
+  }
+
+}
+
 void UITask::loop() {
   if (new_lines) {
 #ifndef LILYGO_TECHO
@@ -137,26 +153,34 @@ void UITask::loop() {
   }
 
 #ifdef PIN_USER_BTN
+  static int time_pressed;
   if (millis() >= _next_read) {
     int btnState = digitalRead(PIN_USER_BTN);
     if (btnState != _prevBtnState) {
       if (btnState == LOW) {  // pressed?
-        if (_display->isOn()) {
-          switch (_screen) {
-            case HOME:
-              _screen = SENSORS;
-              break;
-            case SENSORS:
-              _screen = HOME;
-              break;
-          }
+        time_pressed = millis();
+      } else {
+        if (millis() - time_pressed > 3000) {
+          toggleGps();
           new_lines = true;
         } else {
-          _display->turnOn();
-          new_lines = true;
-          _screen = HOME;
+          if (_display->isOn()) {
+            switch (_screen) {
+              case HOME:
+                _screen = SENSORS;
+                break;
+              case SENSORS:
+                _screen = HOME;
+                break;
+            }
+            new_lines = true;
+          } else {
+            _display->turnOn();
+            new_lines = true;
+            _screen = HOME;
+          }
         }
-        _auto_off = millis() + AUTO_OFF_MILLIS;   // extend auto-off timer
+        _auto_off = millis() + AUTO_OFF_MILLIS;   // extend auto-off timer 
       }
       _prevBtnState = btnState;
     }

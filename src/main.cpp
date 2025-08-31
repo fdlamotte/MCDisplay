@@ -116,6 +116,14 @@ void setup() {
 #endif
 #endif
 
+#ifndef LILYGO_TECHO
+  if (display.begin()) {
+    display.startFrame();
+    display.print("Please wait...");
+    display.endFrame();
+  }
+#endif
+
   if (!radio_init()) { halt(); }
 
   fast_rng.begin(radio_get_rng_seed());
