@@ -167,6 +167,7 @@ void UITask::loop() {
             switch (_screen) {
               case HOME:
                 _screen = SENSORS;
+                _next_forced_refresh = millis() + 500000; // in 5 min
                 break;
               case SENSORS:
                 _screen = HOME;
@@ -188,8 +189,15 @@ void UITask::loop() {
 #endif
   
   if (_display->isOn()) {
-    if (new_lines || ( (millis() >= _next_refresh)
-      && (_screen == SENSORS) && scroll)) {
+  #ifdef LILYGO_TECHO
+    if (millis() > _next_forced_refresh && _screen == SENSORS) {
+      _next_forced_refresh = millis() + 500000; // force refresh every 5min
+      new_lines = true;
+    }
+  #endif
+    if (new_lines 
+       || ((millis() >= _next_refresh) && (_screen == SENSORS) && scroll)
+        ) {
       _display->startFrame();
       renderCurrScreen();
       _display->endFrame();

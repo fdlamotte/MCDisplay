@@ -10,7 +10,7 @@
 
 class UITask {
   DisplayDriver* _display;
-  unsigned long _next_read, _next_refresh, _auto_off;
+  unsigned long _next_read, _next_refresh, _auto_off, _next_forced_refresh;
   int _prevBtnState;
   NodePrefs* _node_prefs;
   char _version_info[32];
@@ -28,7 +28,7 @@ class UITask {
 
   void renderCurrScreen();
 public:
-  UITask(DisplayDriver& display) : _display(&display), _sensors_doc(2048) { _next_read = _next_refresh = 0; _sensors_arr=_sensors_doc.to<JsonArray>(); }
+  UITask(DisplayDriver& display) : _display(&display), _sensors_doc(2048) { _next_read = _next_refresh = _next_forced_refresh = 0; _sensors_arr=_sensors_doc.to<JsonArray>(); }
   void begin(NodePrefs* node_prefs, const char* build_date, const char* firmware_version);
   void refresh_sensors();
   void add_line (char* s);
