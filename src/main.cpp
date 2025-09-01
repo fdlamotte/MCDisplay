@@ -222,4 +222,13 @@ void loop() {
 
   ui_task.loop();
 
+  delay(10);
 }
+
+#ifdef NRF52_PLATFORM
+extern "C" {
+  void vApplicationIdleHook( void ) {
+    waitForEvent();
+  }
+}
+#endif
