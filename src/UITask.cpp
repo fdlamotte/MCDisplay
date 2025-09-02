@@ -152,14 +152,13 @@ void UITask::loop() {
   }
 
 #ifdef PIN_USER_BTN
-  static int time_pressed;
   if (millis() >= _next_read) {
     int btnState = digitalRead(PIN_USER_BTN);
     if (btnState != _prevBtnState) {
       if (btnState == LOW) {  // pressed?
-        time_pressed = millis();
+        time_btn_pressed = millis();
       } else {
-        if (millis() - time_pressed > 3000) {
+        if (millis() - time_btn_pressed > 3000) {
           toggleGps();
           new_lines = true;
         } else {

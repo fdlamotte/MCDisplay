@@ -20,6 +20,7 @@ class UITask {
   enum {HOME, SENSORS} _screen = HOME;
   DynamicJsonDocument _sensors_doc;
   JsonArray _sensors_arr;
+  int time_btn_pressed;
 
   char display_lines[DISPLAY_LINES][LINE_LENGTH+1] = {
   "",

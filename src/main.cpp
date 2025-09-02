@@ -89,6 +89,10 @@ SimpleMeshTables tables;
 
 MyMesh the_mesh(board, radio_driver, *new ArduinoMillis(), fast_rng, rtc_clock, tables);
 
+#ifdef LILYGO_TECHO
+int next_backlight_btn_check = 0;
+#endif
+
 void halt() {
   while (1) ;
 }
@@ -204,19 +208,10 @@ void loop() {
 
 // Techo Backlight support
 #ifdef LILYGO_TECHO
-  static int next_btn_check = 0;
-  if (millis() > next_btn_check) {
+  if (millis() > next_backlight_btn_check) {
     bool touch_state = digitalRead(PIN_BUTTON2);
     digitalWrite(DISP_BACKLIGHT, !touch_state);
-    next_btn_check = millis() + 300;
-  }
-
-  static int next_led_toggle = 0;
-  if (millis() > next_led_toggle) {
-    static bool led_state = LOW;
-    led_state = ~led_state;
-    digitalWrite(14, led_state);
-    next_led_toggle = millis() + 1000;
+    next_backlight_btn_check = millis() + 300;
   }
 #endif
 
