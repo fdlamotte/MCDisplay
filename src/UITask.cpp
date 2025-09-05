@@ -2,7 +2,9 @@
 #include <Arduino.h>
 #include <helpers/CommonCLI.h>
 
-#define AUTO_OFF_MILLIS      60000  // 1 min
+#ifndef AUTO_OFF_MILLIS
+  #define AUTO_OFF_MILLIS      60000  // 1 min
+#endif
 #ifdef LILYGO_TECHO
 #define BOOT_SCREEN_MILLIS   8000   // 8 seconds
 #else
@@ -74,7 +76,7 @@ void UITask::renderCurrScreen() {
     int s_size = _sensors_arr.size();
     for (int i = 0; i < (scroll?DISPLAY_LINES-1:s_size); i++) {
       JsonObject v = _sensors_arr[(i+scroll_offset)%s_size];
-      _display->setCursor(5, y);
+      _display->setCursor(0, y);
       switch (v["type"].as<int>()) {
         case 136: // GPS
           sprintf(buf, "%.4f %.4f",
@@ -85,7 +87,7 @@ void UITask::renderCurrScreen() {
           sprintf(buf, "%.02f",
             v["value"].as<float>());
       }
-      _display->setCursor(5, y);
+      _display->setCursor(0, y);
       _display->print(v["name"].as<JsonString>().c_str());
       _display->setCursor(
         _display->width()-_display->getTextWidth(buf)-1, y
@@ -142,11 +144,9 @@ bool UITask::toggleGps() {
 
 void UITask::loop() {
   if (new_lines) {
-#ifndef LILYGO_TECHO
     if (!_display->isOn()) {
       _display->turnOn();
     } 
-#endif
     _screen=HOME;
     _auto_off = millis() + AUTO_OFF_MILLIS;
   }
@@ -186,25 +186,24 @@ void UITask::loop() {
     _next_read = millis() + 200;  // 5 reads per second
   }
 #endif
+#if defined(DISP_BACKLIGHT) && defined(BACKLIGHT_BTN)
+  if (millis() > next_backlight_btn_check) {
+    bool touch_state = digitalRead(PIN_BUTTON2);
+    digitalWrite(DISP_BACKLIGHT, !touch_state);
+    next_backlight_btn_check = millis() + 300;
+  }
+#endif
   
   if (_display->isOn()) {
-  #ifdef LILYGO_TECHO
-    if (millis() > _next_forced_refresh && _screen == SENSORS) {
-      _next_forced_refresh = millis() + 500000; // force refresh every 5min
-      new_lines = true;
-    }
-  #endif
-    if (new_lines 
-       || ((millis() >= _next_refresh) && (_screen == SENSORS) && scroll)
-        ) {
+    if (new_lines || ((millis() >= _next_refresh))) {
       _display->startFrame();
       renderCurrScreen();
       _display->endFrame();
 
-      _next_refresh = millis() + 3000;   // refresh every 3 second
+      _next_refresh = millis() + 10000;   // refresh every 10 seconds if no new line
     }
     
-#ifndef LILYGO_TECHO
+#if AUTO_OFF_MILLIS > 0
     if (millis() > _auto_off) {
       _display->turnOff();
     }

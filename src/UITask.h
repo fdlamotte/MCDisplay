@@ -21,6 +21,7 @@ class UITask {
   DynamicJsonDocument _sensors_doc;
   JsonArray _sensors_arr;
   int time_btn_pressed;
+  int next_backlight_btn_check = 0;
 
   char display_lines[DISPLAY_LINES][LINE_LENGTH+1] = {
   "",

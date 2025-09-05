@@ -120,13 +120,11 @@ void setup() {
 #endif
 #endif
 
-#ifndef LILYGO_TECHO
   if (display.begin()) {
     display.startFrame();
     display.print("Please wait...");
     display.endFrame();
   }
-#endif
 
   if (!radio_init()) { halt(); }
 
@@ -205,15 +203,6 @@ void loop() {
   }
   the_mesh.loop();
   sensors.loop();
-
-// Techo Backlight support
-#ifdef LILYGO_TECHO
-  if (millis() > next_backlight_btn_check) {
-    bool touch_state = digitalRead(PIN_BUTTON2);
-    digitalWrite(DISP_BACKLIGHT, !touch_state);
-    next_backlight_btn_check = millis() + 300;
-  }
-#endif
 
   ui_task.loop();
 
