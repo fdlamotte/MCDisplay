@@ -3,6 +3,7 @@
 #include <helpers/ui/DisplayDriver.h>
 #include <helpers/CommonCLI.h>
 #include <target.h>
+#include "LPPDataHelpers.h"
 
 #ifndef LINE_LENGTH
 #define LINE_LENGTH 20
@@ -18,8 +19,8 @@ class UITask {
   bool scroll = false;
   int scroll_offset = 0;
   enum {HOME, SENSORS} _screen = HOME;
-  DynamicJsonDocument _sensors_doc;
-  JsonArray _sensors_arr;
+  CayenneLPP _sensors_lpp;
+  int _sensors_nb = 0;
   int time_btn_pressed;
   int next_backlight_btn_check = 0;
 
@@ -30,7 +31,7 @@ class UITask {
 
   void renderCurrScreen();
 public:
-  UITask(DisplayDriver& display) : _display(&display), _sensors_doc(2048) { _next_read = _next_refresh = _next_forced_refresh = 0; _sensors_arr=_sensors_doc.to<JsonArray>(); }
+  UITask(DisplayDriver& display) : _display(&display), _sensors_lpp(200) { _next_read = _next_refresh = _next_forced_refresh = 0; }
   void begin(NodePrefs* node_prefs, const char* build_date, const char* firmware_version);
   void refresh_sensors();
   void add_line (char* s);

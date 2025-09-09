@@ -66,36 +66,86 @@ void UITask::renderCurrScreen() {
     _display->print(node_type);
   } else if (_screen == SENSORS) {
     refresh_sensors();
-    char buf[100];
+    char buf[30];
+    char name[30];
     _display->setCursor(
-        _display->width()
-          -_display->getTextWidth(_node_prefs->node_name) - 1, 3);
+        _display->width() -_display->getTextWidth(_node_prefs->node_name) - 1, 3);
     _display->print(_node_prefs->node_name);
     _display->drawRect(0,15,_display->width(),1);
     int y = 18;
-    int s_size = _sensors_arr.size();
-    for (int i = 0; i < (scroll?DISPLAY_LINES-1:s_size); i++) {
-      JsonObject v = _sensors_arr[(i+scroll_offset)%s_size];
+
+    LPPReader r(_sensors_lpp.getBuffer(), _sensors_lpp.getSize());
+    for (int i = 0; i < scroll_offset; i++) {
+      uint8_t channel, type;
+      r.readHeader(channel, type);
+      r.skipData(type);
+    }
+
+    for (int i = 0; i < (scroll?DISPLAY_LINES-1:_sensors_nb); i++) {
+      uint8_t channel, type;
+      if (!r.readHeader(channel, type)) { // reached end, reset
+        r.reset();
+        r.readHeader(channel, type);
+      }
+
       _display->setCursor(0, y);
-      switch (v["type"].as<int>()) {
-        case 136: // GPS
-          sprintf(buf, "%.4f %.4f",
-            v["value"]["latitude"].as<float>(),
-            v["value"]["longitude"].as<float>());
+      float v;
+      switch (type) {
+        case LPP_GPS: // GPS
+          float lat, lon, alt;
+          r.readGPS(lat, lon, alt);
+          strcpy(name, "gps");
+          sprintf(buf, "%.4f %.4f", lat, lon);
           break;
-        default: // will be a float for now
-          sprintf(buf, "%.02f",
-            v["value"].as<float>());
+        case LPP_VOLTAGE:
+          r.readVoltage(v);
+          strcpy(name, "voltage");
+          sprintf(buf, "%6.2f", v);
+          break;
+        case LPP_CURRENT:
+          r.readCurrent(v);
+          strcpy(name, "current");
+          sprintf(buf, "%.3f", v);
+          break;
+        case LPP_TEMPERATURE:
+          r.readTemperature(v);
+          strcpy(name, "temperature");
+          sprintf(buf, "%.2f", v);
+          break;
+        case LPP_RELATIVE_HUMIDITY:
+          r.readRelativeHumidity(v);
+          strcpy(name, "humidity");
+          sprintf(buf, "%.2f", v);
+          break;
+        case LPP_BAROMETRIC_PRESSURE:
+          r.readPressure(v);
+          strcpy(name, "pressure");
+          sprintf(buf, "%.2f", v);
+          break;
+        case LPP_ALTITUDE:
+          r.readAltitude(v);
+          strcpy(name, "altitude");
+          sprintf(buf, "%.0f", v);
+          break;
+        case LPP_POWER:
+          r.readPower(v);
+          strcpy(name, "power");
+          sprintf(buf, "%6.2f", v);
+          break;
+        default:
+          r.skipData(type);
+          strcpy(name, "unk");
+          sprintf(buf, "");
       }
       _display->setCursor(0, y);
-      _display->print(v["name"].as<JsonString>().c_str());
+      _display->print(name);
       _display->setCursor(
         _display->width()-_display->getTextWidth(buf)-1, y
       );
       _display->print(buf);
       y = y + 12;
     }
-    if (scroll) scroll_offset = (scroll_offset+1)%s_size;
+    if (scroll) scroll_offset = (scroll_offset+1)%_sensors_nb;
     else scroll_offset = 0;
     new_lines = false;
   } else {  // home screen
@@ -108,12 +158,17 @@ void UITask::renderCurrScreen() {
 }
 
 void UITask::refresh_sensors() {
-  CayenneLPP lpp(200);
-  lpp.addVoltage(TELEM_CHANNEL_SELF, (float)board.getBattMilliVolts() / 1000.0f);
-  sensors.querySensors(0xFF, lpp);
-  _sensors_arr.clear();
-  lpp.decode(lpp.getBuffer(), lpp.getSize(), _sensors_arr);
-  scroll = _sensors_arr.size() > DISPLAY_LINES - 1; // there is a status line
+  _sensors_lpp.reset();
+  _sensors_nb = 0;
+  _sensors_lpp.addVoltage(TELEM_CHANNEL_SELF, (float)board.getBattMilliVolts() / 1000.0f);
+  sensors.querySensors(0xFF, _sensors_lpp);
+  LPPReader reader (_sensors_lpp.getBuffer(), _sensors_lpp.getSize());
+  uint8_t channel, type;
+  while(reader.readHeader(channel, type)) {
+    reader.skipData(type);
+    _sensors_nb ++;
+  }
+  scroll = _sensors_nb > DISPLAY_LINES - 1;
 }
 
 void UITask::add_line(char * l) {
