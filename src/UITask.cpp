@@ -94,48 +94,39 @@ void UITask::renderCurrScreen() {
         case LPP_GPS: // GPS
           float lat, lon, alt;
           r.readGPS(lat, lon, alt);
-          strcpy(name, "gps");
-          sprintf(buf, "%.4f %.4f", lat, lon);
+          strcpy(name, "gps"); sprintf(buf, "%.4f %.4f", lat, lon);
           break;
         case LPP_VOLTAGE:
           r.readVoltage(v);
-          strcpy(name, "voltage");
-          sprintf(buf, "%6.2f", v);
+          strcpy(name, "voltage"); sprintf(buf, "%6.2f", v);
           break;
         case LPP_CURRENT:
           r.readCurrent(v);
-          strcpy(name, "current");
-          sprintf(buf, "%.3f", v);
+          strcpy(name, "current"); sprintf(buf, "%.3f", v);
           break;
         case LPP_TEMPERATURE:
           r.readTemperature(v);
-          strcpy(name, "temperature");
-          sprintf(buf, "%.2f", v);
+          strcpy(name, "temperature"); sprintf(buf, "%.2f", v);
           break;
         case LPP_RELATIVE_HUMIDITY:
           r.readRelativeHumidity(v);
-          strcpy(name, "humidity");
-          sprintf(buf, "%.2f", v);
+          strcpy(name, "humidity"); sprintf(buf, "%.2f", v);
           break;
         case LPP_BAROMETRIC_PRESSURE:
           r.readPressure(v);
-          strcpy(name, "pressure");
-          sprintf(buf, "%.2f", v);
+          strcpy(name, "pressure"); sprintf(buf, "%.2f", v);
           break;
         case LPP_ALTITUDE:
           r.readAltitude(v);
-          strcpy(name, "altitude");
-          sprintf(buf, "%.0f", v);
+          strcpy(name, "altitude"); sprintf(buf, "%.0f", v);
           break;
         case LPP_POWER:
           r.readPower(v);
-          strcpy(name, "power");
-          sprintf(buf, "%6.2f", v);
+          strcpy(name, "power"); sprintf(buf, "%6.2f", v);
           break;
         default:
           r.skipData(type);
-          strcpy(name, "unk");
-          sprintf(buf, "");
+          strcpy(name, "unk"); sprintf(buf, "");
       }
       _display->setCursor(0, y);
       _display->print(name);
