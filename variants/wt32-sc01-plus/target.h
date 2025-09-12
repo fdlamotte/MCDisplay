@@ -8,7 +8,7 @@
   #include <helpers/sensors/MicroNMEALocationProvider.h>
 #endif
 #ifdef DISPLAY_CLASS
-  #include "WT32Display.h"
+  #include <WT32Display.h>
   #include <helpers/ui/MomentaryButton.h>
 #endif
 
