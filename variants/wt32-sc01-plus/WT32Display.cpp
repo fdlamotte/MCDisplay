@@ -1,7 +1,7 @@
 #include "WT32Display.h"
 
 bool WT32Display::begin() {
-
+    turnOn();
     display.init();
     display.setRotation(1);
     display.setBrightness(64);
@@ -12,10 +12,17 @@ bool WT32Display::begin() {
   }
 
 void WT32Display::turnOn() {
+//  display.wakeup();
+  if (!_isOn) {
+    display.wakeup();
+  }
   _isOn = true;
 }
 
 void WT32Display::turnOff() {
+  if (_isOn) {
+    display.sleep();
+  }
   _isOn = false;
 }
 
@@ -72,4 +79,12 @@ void WT32Display::endFrame() {
   display.endWrite();
 
   //  Serial.println("End Frame");
+}
+
+bool WT32Display::getTouch(int *x, int *y) {
+  lgfx::v1::touch_point_t point;
+  display.getTouch(&point);
+  *x = point.x;
+  *y = point.y;
+  return (*x >= 0) && (*y >= 0);
 }

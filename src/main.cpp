@@ -77,7 +77,16 @@ protected:
     return SensorMesh::handleIncomingMsg(from, timestamp, data, flags, len);
   }
 
+  char in_data[156];
+  char out_data[160] = "s> ";
+  
 public:
+  void sendToPeers(char * msg) {
+    serial.text[0] = 0;
+    strncpy(&out_data[3], msg, 156);
+    alertIf(true, serial, LOW_PRI_ALERT, out_data);
+  }
+
   void loop() {
     SensorMesh::loop();
   }
@@ -211,6 +220,10 @@ void loop() {
   ui_task.loop();
 
   delay(10);
+}
+
+void sendMsg(char* msg) {
+  the_mesh.sendToPeers(msg);
 }
 
 #ifdef NRF52_PLATFORM

@@ -11,6 +11,8 @@
 #define BOOT_SCREEN_MILLIS   4000   // 4 seconds
 #endif
 
+void sendMsg(char * txt);
+
 // 'meshcore', 128x13px
 static const uint8_t meshcore_logo [] PROGMEM = {
     0x3c, 0x01, 0xe3, 0xff, 0xc7, 0xff, 0x8f, 0x03, 0x87, 0xfe, 0x1f, 0xfe, 0x1f, 0xfe, 0x1f, 0xfe, 
@@ -132,13 +134,33 @@ void UITask::renderCurrScreen() {
       _display->setCursor(0, y);
       _display->print(name);
       _display->setCursor(
-        _display->width()-_display->getTextWidth(buf)-1, y
+      _display->width()-_display->getTextWidth(buf)-1, y
       );
       _display->print(buf);
       y = y + 12;
     }
     if (scroll) scroll_offset = (scroll_offset+1)%_sensors_nb;
     else scroll_offset = 0;
+    new_lines = false;
+  } else if (_screen == KEYBOARD) {
+    int x, y;
+    y = 160;
+    x = 0;
+    char buf[2]="1";
+    _display->setTextSize(2);
+    _display->setCursor(10,2);
+    _display->print(text_buffer);
+    for (int i = 0; i < 4; i ++) {
+      for (int j = 0; j < 10; j++) {
+        _display->setCursor(x+20,y);
+        buf[0] = keys[i][j];
+        _display->print(buf);
+        x = x + 48;
+      }
+      y = y + 40; 
+      x = 0;
+    }
+    _display->setTextSize(1);
     new_lines = false;
   } else {  // home screen
     for (int i=0; i < DISPLAY_LINES; i++) {
@@ -197,6 +219,52 @@ void UITask::loop() {
     _screen=HOME;
     _auto_off = millis() + AUTO_OFF_MILLIS;
   }
+
+#ifdef HAS_TOUCH
+  if (millis () >= _next_read) {
+    int x, y;
+    if (display.getTouch(&x, &y)) {
+      if (!display.isOn()) {
+        display.turnOn();
+      } else { 
+        switch(_screen) {
+          case KEYBOARD:
+            if (y < 120) {
+              if (x < 160) { // left
+                int len = strlen(text_buffer);
+                if (len > 0) {
+                  text_buffer[len - 1] = 0;
+                }
+              } else if (x > 320) { // right
+                _screen = HOME;
+              } else { //center
+                sendMsg(text_buffer);
+                strcpy(text_buffer, "");
+              }
+            } else if (y>140){
+              int i = (y - 140) / 48;
+              int j = x / 48;
+              int l = strlen(text_buffer);
+              text_buffer[l] = keys[i][j];
+              text_buffer[l+1] = 0;
+            }
+            break;
+          default:  
+            if (y > 200) {
+              _screen = KEYBOARD;
+            } else if (x < 240) {
+              _screen = HOME;
+            } else {
+              _screen = SENSORS;
+            }
+        }
+      }
+      new_lines = true;
+      _auto_off = millis() + AUTO_OFF_MILLIS;   // extend auto-off timer 
+    }
+    _next_read = millis() + 200;
+  }
+#endif
 
 #ifdef PIN_USER_BTN
   if (millis() >= _next_read) {

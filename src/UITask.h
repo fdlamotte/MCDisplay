@@ -18,11 +18,14 @@ class UITask {
   bool new_lines = true;
   bool scroll = false;
   int scroll_offset = 0;
-  enum {HOME, SENSORS} _screen = HOME;
+  enum {HOME, SENSORS, KEYBOARD} _screen = HOME;
   CayenneLPP _sensors_lpp;
   int _sensors_nb = 0;
   int time_btn_pressed;
   int next_backlight_btn_check = 0;
+  char text_buffer[100];
+  char keys[4][11] = {"1234567890", "azertyuiop", "qsdfghjklm", "wxcvbn    " };
+
 
   char display_lines[DISPLAY_LINES][LINE_LENGTH+1] = {
   "",
