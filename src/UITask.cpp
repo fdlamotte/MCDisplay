@@ -64,6 +64,7 @@ void UITask::renderCurrScreen() {
     uint16_t typeWidth = _display->getTextWidth(node_type);
     _display->setCursor((_display->width() - typeWidth) / 2, 35);
     _display->print(node_type);
+    new_lines = false;
   } else if (_screen == SENSORS) {
     refresh_sensors();
     char buf[30];
@@ -246,7 +247,7 @@ void UITask::loop() {
       renderCurrScreen();
       _display->endFrame();
 
-      _next_refresh = millis() + 10000;   // refresh every 10 seconds if no new line
+      _next_refresh = millis() + 5000;   // refresh every 10 seconds if no new line
     }
     
 #if AUTO_OFF_MILLIS > 0
