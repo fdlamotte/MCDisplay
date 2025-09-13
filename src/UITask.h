@@ -3,7 +3,7 @@
 #include <helpers/ui/DisplayDriver.h>
 #include <helpers/CommonCLI.h>
 #include <target.h>
-#include "LPPDataHelpers.h"
+#include <helpers/sensors/LPPDataHelpers.h>
 
 #ifndef LINE_LENGTH
 #define LINE_LENGTH 20
