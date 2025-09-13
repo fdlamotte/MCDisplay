@@ -8,11 +8,13 @@
 class LGFXDisplay : public DisplayDriver {
 protected:
   LGFX_Device* display;
+  LGFX_Sprite buffer;
+
   bool _isOn;
   uint8_t _color = TFT_WHITE;
 
 public:
-  LGFXDisplay(int w, int h):DisplayDriver(w, h){_isOn = false;}
+  LGFXDisplay(int w, int h):DisplayDriver(w, h) {_isOn = false;}
   bool begin();
   bool isOn() override { return _isOn; }
   void turnOn() override;
