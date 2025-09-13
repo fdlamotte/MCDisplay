@@ -79,23 +79,23 @@ uint16_t LGFXDisplay::getTextWidth(const char* str) {
 
 void LGFXDisplay::endFrame() {
   display->startWrite();
-#if UI_ZOOM == 1
-  buffer.pushSprite(display, 0, 0);
-#else
-  buffer.pushRotateZoom(display, display->width()/2, display->height()/2 , 0, UI_ZOOM, UI_ZOOM);
-#endif
+  if (UI_ZOOM != 1) {
+    buffer.pushRotateZoom(display, display->width()/2, display->height()/2 , 0, UI_ZOOM, UI_ZOOM);
+  } else {
+    buffer.pushSprite(display, 0, 0);
+  }
   display->endWrite();
 }
 
 bool LGFXDisplay::getTouch(int *x, int *y) {
   lgfx::v1::touch_point_t point;
   display->getTouch(&point);
-#if UI_ZOOM == 1
-  *x = point.x;
-  *y = point.y;
-#else
-  *x = point.x / UI_ZOOM;
-  *y = point.y / UI_ZOOM;
-#endif
+  if (UI_ZOOM != 1) {
+    *x = point.x / UI_ZOOM;
+    *y = point.y / UI_ZOOM;
+  } else {
+    *x = point.x;
+    *y = point.y;
+  }
   return (*x >= 0) && (*y >= 0);
 }
