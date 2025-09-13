@@ -48,8 +48,32 @@ void LGFXDisplay::setTextSize(int sz) {
 
 void LGFXDisplay::setColor(Color c) {
   // _color = (c != 0) ? ILI9342_WHITE : ILI9342_BLACK;
-  _color = TFT_WHITE;
-  buffer.setTextColor(TFT_WHITE);
+  switch (c) {
+    case DARK:
+      _color = TFT_BLACK;
+      break;
+    case LIGHT:
+      _color = TFT_WHITE;
+      break;
+    case RED:
+      _color = TFT_RED;
+      break;
+    case GREEN:
+      _color = TFT_GREEN;
+      break;
+    case BLUE:
+      _color = TFT_BLUE;
+      break;
+    case YELLOW:
+      _color = TFT_YELLOW;
+      break;
+    case ORANGE:
+      _color = TFT_ORANGE;
+      break;
+    default:
+      _color = TFT_WHITE;
+  }
+  buffer.setTextColor(_color);
 }
 
 void LGFXDisplay::setCursor(int x, int y) {
@@ -70,7 +94,7 @@ void LGFXDisplay::drawRect(int x, int y, int w, int h) {
 }
 
 void LGFXDisplay::drawXbm(int x, int y, const uint8_t* bits, int w, int h) {
-  buffer.drawBitmap(x, y, bits, w, h, TFT_BLUE);
+  buffer.drawBitmap(x, y, bits, w, h, _color);
 }
 
 uint16_t LGFXDisplay::getTextWidth(const char* str) {

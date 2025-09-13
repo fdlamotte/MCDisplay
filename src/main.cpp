@@ -132,12 +132,10 @@ void setup() {
   Serial.println("starting ...");
 
   if (display.begin()) {
-    // display.startFrame();
-    // display.print("Please wait...");
-    // display.endFrame();
+    display.startFrame();
+    display.print("Please wait...");
+    display.endFrame();
   }
-
-  Serial.println("Display inited");
 
   if (!radio_init()) { halt(); }
 

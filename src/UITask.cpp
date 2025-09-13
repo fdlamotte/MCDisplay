@@ -71,10 +71,12 @@ void UITask::renderCurrScreen() {
     refresh_sensors();
     char buf[30];
     char name[30];
+    _display->setColor(DisplayDriver::Color::YELLOW);
     _display->setCursor(
         _display->width() -_display->getTextWidth(_node_prefs->node_name) - 1, 3);
     _display->print(_node_prefs->node_name);
     _display->drawRect(0,15,_display->width(),1);
+    _display->setColor(DisplayDriver::Color::LIGHT);
     int y = 18;
 
     LPPReader r(_sensors_lpp.getBuffer(), _sensors_lpp.getSize());

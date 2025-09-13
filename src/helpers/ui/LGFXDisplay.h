@@ -15,7 +15,7 @@ protected:
   LGFX_Sprite buffer;
 
   bool _isOn;
-  uint8_t _color = TFT_WHITE;
+  int _color = TFT_WHITE;
 
 public:
   LGFXDisplay(int w, int h):DisplayDriver(w/UI_ZOOM, h/UI_ZOOM) {_isOn = false;}

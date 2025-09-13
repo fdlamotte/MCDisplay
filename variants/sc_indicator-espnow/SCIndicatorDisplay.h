@@ -37,7 +37,7 @@ public:
 
     {
         auto cfg = _panel_instance.config_detail();
-        cfg.pin_cs = (4 | IO_EXPANDER); // check io_expander for this ...
+        cfg.pin_cs = 4 | IO_EXPANDER;
         cfg.pin_sclk = 41;
         cfg.pin_mosi = 48;
         cfg.use_psram = 1;
@@ -48,7 +48,7 @@ public:
         auto cfg = _bus_instance.config();
         cfg.panel = &_panel_instance;
 
-        cfg.freq_write = 10000000;
+        cfg.freq_write = 8000000;
         cfg.pin_henable = 18;
 
         cfg.pin_pclk = 21;
