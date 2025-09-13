@@ -5,6 +5,10 @@
 #define LGFX_USE_V1
 #include <LovyanGFX.hpp>
 
+#ifndef UI_ZOOM
+  #define UI_ZOOM 1
+#endif
+
 class LGFXDisplay : public DisplayDriver {
 protected:
   LGFX_Device* display;
@@ -14,7 +18,7 @@ protected:
   uint8_t _color = TFT_WHITE;
 
 public:
-  LGFXDisplay(int w, int h):DisplayDriver(w, h) {_isOn = false;}
+  LGFXDisplay(int w, int h):DisplayDriver(w/UI_ZOOM, h/UI_ZOOM) {_isOn = false;}
   bool begin();
   bool isOn() override { return _isOn; }
   void turnOn() override;
