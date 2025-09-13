@@ -78,7 +78,6 @@ uint16_t LGFXDisplay::getTextWidth(const char* str) {
 }
 
 void LGFXDisplay::endFrame() {
-  Serial.println(display->getScanLine());
   display->startWrite();
 #if UI_ZOOM == 1
   buffer.pushSprite(display, 0, 0);
