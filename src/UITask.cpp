@@ -10,6 +10,9 @@
 #else
 #define BOOT_SCREEN_MILLIS   4000   // 4 seconds
 #endif
+#ifndef KEYBOARD_WIRE
+#define KEYBOARD_WIRE Wire1
+#endif
 
 void sendMsg(char * txt);
 
@@ -319,20 +322,23 @@ void UITask::loop() {
 
 #ifdef HAS_KEYBOARD
   if (_screen == KEYBOARD) {
-    Wire.requestFrom(0x5F, 1);
-    while(Wire.available()) {
-      char c = Wire.read();
+    KEYBOARD_WIRE.requestFrom(0x5F, 1);
+    while(KEYBOARD_WIRE.available()) {
+      char c = KEYBOARD_WIRE.read();
       if (c != 0)
       {
         if (c == 0xd) {
           sendMsg(text_buffer);
           strcpy(text_buffer, "");
+        } else if (c == 0x08) {
+          int l = strlen(text_buffer);
+          if (l > 0) {
+            text_buffer[--l] = 0;
+          }
         } else {
-          Serial.printf("%c %x\r\n", c, c);
           int l = strlen(text_buffer);
           text_buffer[l] = c;
           text_buffer[++l] = 0;
-          Serial.println(text_buffer);
         }      
         new_lines = true;
         _auto_off = millis() + AUTO_OFF_MILLIS;   // extend auto-off timer 
