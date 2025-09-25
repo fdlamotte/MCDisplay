@@ -26,7 +26,6 @@ class UITask {
   char text_buffer[100];
   char keys[4][11] = {"1234567890", "azertyuiop", "qsdfghjklm", "wxcvbn    " };
 
-
   char display_lines[DISPLAY_LINES][LINE_LENGTH+1] = {
   "",
   "Hello from MeshCore"

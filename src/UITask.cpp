@@ -149,6 +149,7 @@ void UITask::renderCurrScreen() {
     y = 160;
     x = 0;
     char buf[2]="1";
+#ifdef HAS_TOUCH
     _display->setTextSize(2);
     _display->setCursor(10,2);
     _display->print(text_buffer);
@@ -162,6 +163,11 @@ void UITask::renderCurrScreen() {
       y = y + 40; 
       x = 0;
     }
+#else
+    _display->setTextSize(1);
+    _display->setCursor(2,2);
+    _display->print(text_buffer);
+#endif
     _display->setTextSize(1);
     new_lines = false;
   } else {  // home screen
@@ -286,6 +292,13 @@ void UITask::loop() {
                 _next_forced_refresh = millis() + 500000; // in 5 min
                 break;
               case SENSORS:
+                #ifdef HAS_KEYBOARD
+                  _screen = KEYBOARD;
+                #else
+                  _screen = HOME;
+                #endif
+                break;
+              case KEYBOARD:
                 _screen = HOME;
                 break;
             }
@@ -303,6 +316,32 @@ void UITask::loop() {
     _next_read = millis() + 200;  // 5 reads per second
   }
 #endif
+
+#ifdef HAS_KEYBOARD
+  if (_screen == KEYBOARD) {
+    Wire.requestFrom(0x5F, 1);
+    while(Wire.available()) {
+      char c = Wire.read();
+      if (c != 0)
+      {
+        if (c == 0xd) {
+          sendMsg(text_buffer);
+          strcpy(text_buffer, "");
+        } else {
+          Serial.printf("%c %x\r\n", c, c);
+          int l = strlen(text_buffer);
+          text_buffer[l] = c;
+          text_buffer[++l] = 0;
+          Serial.println(text_buffer);
+        }      
+        new_lines = true;
+        _auto_off = millis() + AUTO_OFF_MILLIS;   // extend auto-off timer 
+      }
+    }
+
+  }
+#endif
+
 #if defined(DISP_BACKLIGHT) && defined(BACKLIGHT_BTN)
   if (millis() > next_backlight_btn_check) {
     bool touch_state = digitalRead(PIN_BUTTON2);
