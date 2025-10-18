@@ -13,5 +13,5 @@ class ILI9342Display : public LGFXDisplay {
   LGFX disp;
 
 public:
-  ILI9342Display() : LGFXDisplay(320, 240) { display=&disp; }
+  ILI9342Display() : LGFXDisplay(320, 240, disp) { }
 };
