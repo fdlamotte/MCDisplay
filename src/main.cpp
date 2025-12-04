@@ -62,8 +62,7 @@ protected:
     }
     return false;  // not handled
   }
-
-  bool handleIncomingMsg(ClientInfo& from, uint32_t timestamp, uint8_t* data, uint flags, size_t len) override {
+  bool handleIncomingMsg(ClientInfo& from, uint32_t timestamp, uint8_t* data, uint8_t flags, size_t len) override {
     if (len > 3 && !memcmp(data, "s> ", 3)) {
       data[len] = 0;
       ui_task.add_line((char*) &data[3]);
